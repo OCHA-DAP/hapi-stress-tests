@@ -71,11 +71,7 @@ def _get_afg_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
     df = (
         pd.read_csv(dataset_url, skiprows=[1])
         .rename(columns=lambda x: x.strip())
-        .rename(
-            columns={
-                "Admin1_Code": "admin1_code",
-            }
-        )
+        .rename(columns={"Admin1_Code": "admin1_code"})
         .drop(columns=["Admin0_Name", "Admin0_Code", "Admin1_Name"])
     )
     df["admin0_code_iso3"] = "AFG"
