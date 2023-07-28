@@ -1,9 +1,15 @@
 import argparse
 import logging
 
+import coloredlogs
+
 from src import add_data, setup
 
-logging.basicConfig(level=logging.INFO)
+# logging.basicConfig(level=logging.INFO,
+#                    format='%(asctime)s %(levelname)-8s %(message)s',
+#                    datefmt='%Y-%m-%d %H:%M:%S'
+#                    )
+coloredlogs.install(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
@@ -18,10 +24,10 @@ if __name__ == "__main__":
     args = get_args()
     setup.create_db(recreate_db=args.recreate_db)
     setup.create_table()
-    # datum_id_max = add_data.add_afg_pop_data()
-    # datum_id_max = add_data.add_fake_pop_data(datum_id_min=datum_id_max + 1)
+    datum_id_max = add_data.add_afg_pop_data()
+    datum_id_max = add_data.add_fake_pop_data(datum_id_min=datum_id_max + 1)
     # Add the rest of the data in batches for memory reasons
-    nbatches = 10
+    nbatches = 145  # this will give aobut 25 mil rows
     logger.info(f"Adding {nbatches} batches ")
     for i in range(nbatches):
         logger.info(f"On batch number {i}")

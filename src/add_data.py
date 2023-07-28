@@ -1,5 +1,6 @@
 import logging
 import string
+from datetime import date, timedelta
 from itertools import product
 
 import numpy as np
@@ -9,14 +10,25 @@ from sqlalchemy import create_engine
 from src import settings, utils
 
 logger = logging.getLogger(__name__)
-_RNG = np.random.default_rng(12345)
+
+
+# Settings for generating the fake data
 _N_ISO3 = 23
 _N_ADMIN2 = 500
 _N_THEMES = 10
+_ADMIN1_CODE = "P001"  # just use the same admin1 everywhere
+
+# Create some handy lists
+_RNG = np.random.default_rng(12345)
 _ISO3S = [
     "".join(_RNG.choice(list(string.ascii_uppercase), 3))
     for _ in range(_N_ISO3)
 ]
+_DATES = [date(2000, 1, 1) + timedelta(days=i) for i in range(9_000)]
+
+# Settings for memory management
+_DB_INSERTION_CHUNK_SIZE = 100_000
+_FAKE_DATA_DIMENSION_SIZE = 5
 
 
 def add_afg_pop_data(datum_id_min: int = 0) -> int:
@@ -49,7 +61,7 @@ def _add_df_to_table(df: pd.DataFrame):
         con=engine,
         if_exists="append",
         index=False,
-        chunksize=100_000,
+        chunksize=_DB_INSERTION_CHUNK_SIZE,
     )
 
 
@@ -61,17 +73,16 @@ def _get_afg_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
         .rename(columns=lambda x: x.strip())
         .rename(
             columns={
-                "Admin1_Name": "admin1_name",
                 "Admin1_Code": "admin1_code",
             }
         )
-        .drop(columns=["Admin0_Name", "Admin0_Code"])
+        .drop(columns=["Admin0_Name", "Admin0_Code", "Admin1_Name"])
     )
     df["admin0_code_iso3"] = "AFG"
     df["theme"] = "population"
 
     # Melt the dataframe
-    id_vars = ["admin0_code_iso3", "admin1_name", "admin1_code", "theme"]
+    id_vars = ["admin0_code_iso3", "admin1_code", "theme"]
     df_melted = df.melt(
         id_vars=id_vars, var_name="key", value_name="population"
     )
@@ -96,6 +107,10 @@ def _get_afg_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
         )
         df_melted_cname["key"] = cname
         df_combined = pd.concat([df_combined, df_melted_cname])
+
+    # Add missing params
+    df_combined["start_date"] = date(2023, 1, 1)
+    df_combined["admin1_code"] = _ADMIN1_CODE
 
     return df_combined
 
@@ -134,12 +149,14 @@ def _generate_fake_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
     # Combine all arrays into the DataFrame with the updated column names
     df = pd.DataFrame(
         {
+            "theme": "population",
             "admin0_code_iso3": iso3_arr,
+            "admin1_code": _ADMIN1_CODE,
             "admin2_code": admin2_code_arr,
+            "start_date": date(2023, 1, 1),
             "datum_id": datum_id_arr,
             "key": key_arr,
             "value": values_arr,
-            "theme": "population",
         }
     )
 
@@ -147,7 +164,7 @@ def _generate_fake_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
 
 
 def _generate_fake_data(
-    datum_id_min: int = 0, dimension_size: int = 5
+    datum_id_min: int = 0, dimension_size: int = _FAKE_DATA_DIMENSION_SIZE
 ) -> pd.DataFrame:
     """
     Generate a fake dataset with two dimensions, one indicator, and
@@ -197,12 +214,17 @@ def _generate_fake_data(
     key_arr = ["dim1", "dim2", "indicator"] * len(combinations)
     values_arr = np.column_stack([dim1_arr, dim2_arr, indicator_arr]).ravel()
 
+    dates_arr = _RNG.choice(_DATES, len(key_arr))
+
     # Combine all arrays into the DataFrame with the updated column names
     df = pd.DataFrame(
         {
             "theme": theme_arr,
             "admin0_code_iso3": iso3_arr,
+            "admin1_code": _ADMIN1_CODE,
             "admin2_code": admin2_code_arr,
+            "start_date": dates_arr,
+            "end_date": dates_arr,
             "datum_id": datum_id_arr,
             "key": key_arr,
             "value": values_arr,
