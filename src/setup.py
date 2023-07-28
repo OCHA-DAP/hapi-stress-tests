@@ -57,7 +57,7 @@ def create_table():
         Column("admin2_code", String),
         Column("start_date", Date),
         Column("end_date", Date),
-        Column("record_id", Integer),
+        Column("datum_id", Integer),
         Column("theme_name", String),
         Column("key", String),
         Column("value", String),
