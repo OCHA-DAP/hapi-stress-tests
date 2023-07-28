@@ -5,10 +5,6 @@ import coloredlogs
 
 from src import add_data, setup
 
-# logging.basicConfig(level=logging.INFO,
-#                    format='%(asctime)s %(levelname)-8s %(message)s',
-#                    datefmt='%Y-%m-%d %H:%M:%S'
-#                    )
 coloredlogs.install(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
