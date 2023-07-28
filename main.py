@@ -17,5 +17,6 @@ if __name__ == "__main__":
     args = get_args()
     setup.create_db(recreate_db=args.recreate_db)
     setup.create_table()
-    datum_id_max = add_data.add_afg_pop_data()
-    datum_id_max = add_data.add_fake_pop_data(datum_id_min=datum_id_max + 1)
+    # datum_id_max = add_data.add_afg_pop_data()
+    # datum_id_max = add_data.add_fake_pop_data(datum_id_min=datum_id_max + 1)
+    datum_id_max = add_data.add_fake_data(datum_id_min=datum_id_max + 1)

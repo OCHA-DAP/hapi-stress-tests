@@ -10,8 +10,12 @@ from src import settings, utils
 
 logger = logging.getLogger(__name__)
 _RNG = np.random.default_rng(12345)
+_N_ISO3 = 23
+_N_ADMIN2 = 500
+_N_THEMES = 10
 _ISO3S = [
-    "".join(_RNG.choice(list(string.ascii_uppercase), 3)) for _ in range(23)
+    "".join(_RNG.choice(list(string.ascii_uppercase), 3))
+    for _ in range(_N_ISO3)
 ]
 
 
@@ -22,11 +26,18 @@ def add_afg_pop_data(datum_id_min: int = 0) -> int:
     return df.loc[:, "datum_id"].max()
 
 
-def add_fake_pop_data(datum_id_min: int = 0):
+def add_fake_pop_data(datum_id_min: int = 0) -> int:
     logger.info("Generating synthetic population data")
     df = _generate_fake_pop_data(datum_id_min)
     logger.info("Adding synthetic population data to table")
     _add_df_to_table(df)
+    return df.loc[:, "datum_id"].max()
+
+
+def add_fake_data(datum_id_min: int = 0) -> int:
+    logger.info("Generating synthetic general data")
+    df = _generate_fake_data(datum_id_min)
+    logger.info("Adding synthetic data to the table")
     return df.loc[:, "datum_id"].max()
 
 
@@ -37,7 +48,7 @@ def _add_df_to_table(df: pd.DataFrame):
     )
 
 
-def _get_afg_pop_data(datum_id_min: int = 0):
+def _get_afg_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
     # Read in the data and clean
     dataset_url = "https://data.humdata.org/dataset/17acb541-9431-409a-80a8-50eda7e8ebab/resource/dc7a5656-d557-404f-8b1d-494c7bbd0112/download/afg_admpop_adm1_2021_v2.csv"
     df = (
@@ -84,7 +95,7 @@ def _get_afg_pop_data(datum_id_min: int = 0):
     return df_combined
 
 
-def _generate_fake_pop_data(datum_id_min: int = 0):
+def _generate_fake_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
     # Assume 500 admin regions per country
     admin2_codes = ["P{:04d}".format(i) for i in range(500)]
     ages = list(range(20))  # 20 different ages
@@ -102,6 +113,7 @@ def _generate_fake_pop_data(datum_id_min: int = 0):
     admin2_code_arr = np.array(
         [[comb[1]] * nrows_per_datum for comb in combinations]
     ).ravel()
+    # Generate a datum ID for each datum
     datum_id_arr = np.repeat(
         np.arange(len(combinations)) + datum_id_min, nrows_per_datum
     )
@@ -113,6 +125,68 @@ def _generate_fake_pop_data(datum_id_min: int = 0):
 
     key_arr = ["age", "sex", "population"] * len(combinations)
     values_arr = np.column_stack([age_arr, sex_arr, population_arr]).ravel()
+
+    # Combine all arrays into the DataFrame with the updated column names
+    df = pd.DataFrame(
+        {
+            "admin0_code_iso3": iso3_arr,
+            "admin2_code": admin2_code_arr,
+            "datum_id": datum_id_arr,
+            "key": key_arr,
+            "value": values_arr,
+        }
+    )
+
+    return df
+
+
+def _generate_fake_data(
+    datum_id_min: int = 0, dimension_size: int = 100
+) -> pd.DataFrame:
+    """
+    Generate a fake dataset with two dimensions, one indicator, and
+    randomly generated ISO3s, pcodes, and data.
+    The main parameter for controlling the size is the dimension size, which
+    sets how many options each of the three dimensions has.
+    The dataset has 23 ISO3s, 500 admin 2 regions, two dimensions and
+    one indicator. This means the size (in rows) will be
+    23 x 500 x 3 x dimension_size.
+    """
+    logger.info(
+        f"Generating dataset with {23 * 500 * 3 * dimension_size} rows."
+    )
+    # Assume 10 themes and 500 admin2 codes
+    themes = ["theme{:02d}".format(i) for i in range(_N_THEMES)]
+    admin2_codes = ["P{:04d}".format(i) for i in range(_N_ADMIN2)]
+    dim1 = ["dim1_{:03d}".format(i) for i in range(dimension_size)]
+    dim2 = ["dim2_{:03d}".format(i) for i in range(dimension_size)]
+
+    # Generate all combinations
+    combinations = list(product(themes, _ISO3S, admin2_codes, dim1, dim2))
+
+    # Separate the combinations into individual arrays for each column
+    # They each need to repeat three times since there are two dimensions
+    # and one indicator
+    nrows_per_datum = 3
+    np.array([[comb[0]] * nrows_per_datum for comb in combinations]).ravel()
+    iso3_arr = np.array(
+        [[comb[1]] * nrows_per_datum for comb in combinations]
+    ).ravel()
+    admin2_code_arr = np.array(
+        [[comb[2]] * nrows_per_datum for comb in combinations]
+    ).ravel()
+    # Generate a datum ID for each datum
+    datum_id_arr = np.repeat(
+        np.arange(len(combinations)) + datum_id_min, nrows_per_datum
+    )
+
+    # Then these will alternate
+    dim1_arr = np.array([comb[3] for comb in combinations])
+    dim2_arr = np.array([comb[4] for comb in combinations])
+    indicator_arr = np.random.randint(10000, 200001, size=len(combinations))
+
+    key_arr = ["dim1", "dim2", "indicator"] * len(combinations)
+    values_arr = np.column_stack([dim1_arr, dim2_arr, indicator_arr]).ravel()
 
     # Combine all arrays into the DataFrame with the updated column names
     df = pd.DataFrame(
