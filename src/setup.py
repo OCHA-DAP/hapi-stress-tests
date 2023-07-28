@@ -50,6 +50,7 @@ def create_table():
         settings.table_name,
         metadata,
         Column("id", Integer, primary_key=True),
+        Column("theme", String),
         Column("admin0_code_iso3", String),
         Column("admin1_name", String),
         Column("admin1_code", String),
@@ -58,7 +59,6 @@ def create_table():
         Column("start_date", Date),
         Column("end_date", Date),
         Column("datum_id", Integer),
-        Column("theme_name", String),
         Column("key", String),
         Column("value", String),
     )

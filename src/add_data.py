@@ -38,13 +38,18 @@ def add_fake_data(datum_id_min: int = 0) -> int:
     logger.info("Generating synthetic general data")
     df = _generate_fake_data(datum_id_min)
     logger.info("Adding synthetic data to the table")
+    _add_df_to_table(df)
     return df.loc[:, "datum_id"].max()
 
 
 def _add_df_to_table(df: pd.DataFrame):
     engine = create_engine(utils.get_connection_string())
     df.to_sql(
-        name=settings.table_name, con=engine, if_exists="append", index=False
+        name=settings.table_name,
+        con=engine,
+        if_exists="append",
+        index=False,
+        chunksize=100_000,
     )
 
 
@@ -63,10 +68,10 @@ def _get_afg_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
         .drop(columns=["Admin0_Name", "Admin0_Code"])
     )
     df["admin0_code_iso3"] = "AFG"
-    df["theme_name"] = "population"
+    df["theme"] = "population"
 
     # Melt the dataframe
-    id_vars = ["admin0_code_iso3", "admin1_name", "admin1_code", "theme_name"]
+    id_vars = ["admin0_code_iso3", "admin1_name", "admin1_code", "theme"]
     df_melted = df.melt(
         id_vars=id_vars, var_name="key", value_name="population"
     )
@@ -134,6 +139,7 @@ def _generate_fake_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
             "datum_id": datum_id_arr,
             "key": key_arr,
             "value": values_arr,
+            "theme": "population",
         }
     )
 
@@ -141,7 +147,7 @@ def _generate_fake_pop_data(datum_id_min: int = 0) -> pd.DataFrame:
 
 
 def _generate_fake_data(
-    datum_id_min: int = 0, dimension_size: int = 100
+    datum_id_min: int = 0, dimension_size: int = 5
 ) -> pd.DataFrame:
     """
     Generate a fake dataset with two dimensions, one indicator, and
@@ -150,7 +156,8 @@ def _generate_fake_data(
     sets how many options each of the three dimensions has.
     The dataset has 23 ISO3s, 500 admin 2 regions, two dimensions and
     one indicator. This means the size (in rows) will be
-    23 x 500 x 3 x dimension_size.
+    23 x 500 x 3 x dimension_size. Should be set to the max that your
+    memory can handle.
     """
     logger.info(
         f"Generating dataset with {23 * 500 * 3 * dimension_size} rows."
@@ -168,7 +175,9 @@ def _generate_fake_data(
     # They each need to repeat three times since there are two dimensions
     # and one indicator
     nrows_per_datum = 3
-    np.array([[comb[0]] * nrows_per_datum for comb in combinations]).ravel()
+    theme_arr = np.array(
+        [[comb[0]] * nrows_per_datum for comb in combinations]
+    ).ravel()
     iso3_arr = np.array(
         [[comb[1]] * nrows_per_datum for comb in combinations]
     ).ravel()
@@ -191,6 +200,7 @@ def _generate_fake_data(
     # Combine all arrays into the DataFrame with the updated column names
     df = pd.DataFrame(
         {
+            "theme": theme_arr,
             "admin0_code_iso3": iso3_arr,
             "admin2_code": admin2_code_arr,
             "datum_id": datum_id_arr,
