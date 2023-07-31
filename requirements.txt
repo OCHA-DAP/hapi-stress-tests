@@ -1,0 +1,5 @@
+coloredlogs==15.0.1
+numpy==1.25.1
+pandas==2.0.3
+psycopg2==2.9.6
+sqlalchemy==2.0.19

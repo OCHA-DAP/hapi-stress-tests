@@ -1,0 +1,7 @@
+line-length = 79
+# List of rules: https://beta.ruff.rs/docs/rules/
+select = [
+  "E",   # pycodestyle - default
+  "F",   # pyflakes - default
+  "I"    # isort
+]
