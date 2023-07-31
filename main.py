@@ -23,7 +23,7 @@ if __name__ == "__main__":
     datum_id_max = add_data.add_afg_pop_data()
     datum_id_max = add_data.add_fake_pop_data(datum_id_min=datum_id_max + 1)
     # Add the rest of the data in batches for memory reasons
-    nbatches = 1  # this will give aobut 25 mil rows
+    nbatches = 3  # this will give aobut 25 mil rows, takes about 20 mins
     logger.info(f"Adding {nbatches} batches ")
     for i in range(nbatches):
         logger.info(f"On batch number {i}")

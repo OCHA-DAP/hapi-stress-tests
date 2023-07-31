@@ -44,20 +44,6 @@ To enter the database:
 docker exec -it hapi-stress-test-db psql -U postgres -d hapi
 ````
 
-To enter the container:
-
-```shell
-docker exec -it hapi-stress-test-db bash
-```
-
-and enter the database:
-
-```shell
-psql --username=postgres --password
-```
-
-(the password is also `postgres`).
-
 ## Development
 
 Be sure to install `pre-commit`, which is run every time
