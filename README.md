@@ -44,6 +44,15 @@ To enter the database:
 docker exec -it hapi-stress-test-db psql -U postgres -d hapi
 ````
 
+## Stress tests
+
+The first set of stress tests involves a timed query. Run:
+```shell
+bash scripts/timed_query scripts/01_basic_query.sql
+bash scripts/timed_query scripts/01_pivot_pop.sql
+bash scripts/timed_query scripts/01_pivot_other.sql
+```
+
 ## Development
 
 Be sure to install `pre-commit`, which is run every time
