@@ -17,7 +17,8 @@ docker compose up -d
 ```
 
 Note that the database username and password are hard-coded directly in
-the docker-compose file, as it's only meant for testing.
+the docker-compose file, as it's only meant for testing. Also, the
+database will be mounted to `$HOME/postgres_data`.
 
 ### Python
 
@@ -36,6 +37,12 @@ python main.py
 ```
 
 ## Exploration
+
+To enter the database:
+
+```shell
+docker exec -it hapi-stress-test-db psql -U postgres -d hapi
+````
 
 To enter the container:
 

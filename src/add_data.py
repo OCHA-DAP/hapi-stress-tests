@@ -172,9 +172,11 @@ def _generate_fake_data(
     23 x 500 x 3 x dimension_size. Should be set to the max that your
     memory can handle.
     """
-    logger.info(
-        f"Generating dataset with {23 * 500 * 3 * dimension_size} rows."
+    nrows_per_datum = 3
+    nrows_total = (
+        _N_THEMES * _N_ISO3 * _N_ADMIN2 * nrows_per_datum * dimension_size
     )
+    logger.info(f"Generating dataset with {nrows_total} rows.")
     # Assume 10 themes and 500 admin2 codes
     themes = ["theme{:02d}".format(i) for i in range(_N_THEMES)]
     admin2_codes = ["P{:04d}".format(i) for i in range(_N_ADMIN2)]
@@ -187,7 +189,6 @@ def _generate_fake_data(
     # Separate the combinations into individual arrays for each column
     # They each need to repeat three times since there are two dimensions
     # and one indicator
-    nrows_per_datum = 3
     theme_arr = np.array(
         [[comb[0]] * nrows_per_datum for comb in combinations]
     ).ravel()
