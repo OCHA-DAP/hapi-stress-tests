@@ -1,7 +1,7 @@
 #!/bin/bash
 
 QUERY_FILE="$1"
-NUM_ITERATIONS=10
+NUM_ITERATIONS=100
 DB_CONTAINER="hapi-stress-test-db"
 
 # Function to extract the real time from the 'EXPLAIN ANALYZE' output
@@ -20,5 +20,5 @@ do
     echo ""
 done
 
-average_time=$(bc <<< "scale=3; $total_time / $NUM_ITERATIONS")
-echo "Average Time: $average_time seconds"
+average_time=$(bc <<< "scale=3; $total_time / $NUM_ITERATIONS / 1000")
+echo "Average Time: $average_time s"

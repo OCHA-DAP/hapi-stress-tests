@@ -48,9 +48,9 @@ docker exec -it hapi-stress-test-db psql -U postgres -d hapi
 
 The first set of stress tests involves a timed query. Run:
 ```shell
-bash scripts/timed_query scripts/01_basic_query.sql
-bash scripts/timed_query scripts/01_pivot_pop.sql
-bash scripts/timed_query scripts/01_pivot_other.sql
+    ./scripts/timed_query.sh scripts/01_basic_query.sql
+./scripts/timed_query.sh scripts/02_pivot_pop.sql
+./scripts/timed_query.sh scripts/03_pivot_other.sql
 ```
 
 ## Development
