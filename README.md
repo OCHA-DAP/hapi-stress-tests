@@ -36,6 +36,13 @@ Populate the database:
 python main.py
 ```
 
+Create other tables:
+```shell
+cat table_scripts/create_multi_tables.sql \
+    | docker exec -i hapi-stress-test-db \
+    psql -h localhost -U postgres -d hapi
+```
+
 ## Exploration
 
 To enter the database:
@@ -50,9 +57,10 @@ The stress tests involve a timed query. Run:
 
 ```shell
 cd test_scripts
-timed_query.sh 01_basic_query.sql
-timed_query.sh 02_pivot_pop.sql
-timed_query.sh 03_pivot_other.sql
+timed_query.sh 01_standard_query.sql
+timed_query.sh 02_filter_date.sql
+timed_query.sh 03_pivot.sql
+timed_query.sh 04_join.sql
 ```
 
 ## Development
